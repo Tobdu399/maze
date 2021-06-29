@@ -2,11 +2,14 @@ import pygame
 import random
 import time
 
-starting_time = time.time()
+starting_time = ending_time = time.time()
+pause_starting_time = pause_duration = 0
 
 pygame.init()
 
-WIDTH = HEIGHT = 600
+WIDTH, HEIGHT            = 600, 600
+maze_size_w, maze_size_h = 50, 50
+speed_limit = 0
 
 display = pygame.display.set_mode((WIDTH, HEIGHT))
 clock   = pygame.time.Clock()
@@ -14,27 +17,26 @@ clock   = pygame.time.Clock()
 pygame.display.set_caption("Maze Generator")
 pygame.display.set_icon(pygame.image.load("images/maze.png"))
 
-process_interrupted = maze_created = False
+process_interrupted = process_paused = maze_created = False
 amount_of_visited_cells = 0
 
-maze_size     = 50
-cells         = [[["0", "0", "0", "0", "0", False] for w in range(maze_size)] for h in range(maze_size)]
+cells         = [[["0", "0", "0", "0", "0", False] for _ in range(maze_size_w)] for _ in range(maze_size_h)]
 current_cell  = (0, 0)
 visited_cells = []
 
 while not process_interrupted:
+    pygame.display.set_caption(f"Maze Generator    {(amount_of_visited_cells / (maze_size_w*maze_size_h)*100):.1f} %    {speed_limit if speed_limit != 0 else 'unltd.'} T/S    {(f'Finished in {(ending_time - starting_time - pause_duration):.3f} s    ') if maze_created else ''}{'PAUSED' if process_paused else ''}")
+
     display.fill((255, 255, 255))
 
-    if not maze_created:
-        pygame.display.set_caption(f"Maze Generator    {(amount_of_visited_cells / (maze_size**2)*100):.1f} %")
-
+    if not maze_created and not process_paused:
         # Get all unvisited neighbour cells
         possible_moves = []
         if current_cell[1] > 0 and cells[current_cell[1]-1][current_cell[0]][-1] == False:
             possible_moves.append("1")
-        if current_cell[0] < maze_size-1 and cells[current_cell[1]][current_cell[0]+1][-1] == False:
+        if current_cell[0] < maze_size_w-1 and cells[current_cell[1]][current_cell[0]+1][-1] == False:
             possible_moves.append("2")
-        if current_cell[1] < maze_size-1 and cells[current_cell[1]+1][current_cell[0]][-1] == False:
+        if current_cell[1] < maze_size_h-1 and cells[current_cell[1]+1][current_cell[0]][-1] == False:
             possible_moves.append("3")
         if current_cell[0] > 0 and cells[current_cell[1]][current_cell[0]-1][-1] == False:
             possible_moves.append("4")
@@ -67,7 +69,7 @@ while not process_interrupted:
                 visited_cells.pop()
             else:
                 # If cannot go back anymore, the maze is finished
-                pygame.display.set_caption(f"Maze Generator    {(amount_of_visited_cells / (maze_size**2)*100):.1f} %    Finished in {(time.time() - starting_time):.3f} s")
+                ending_time = time.time()
                 maze_created = True
 
     # Draw the maze
@@ -77,10 +79,6 @@ while not process_interrupted:
         cell_width = WIDTH/len(cells[row])
         for col in range(len(cells[row])):
             
-            # Cursor
-            if not maze_created and col == current_cell[0] and row == current_cell[1]:
-                pygame.draw.rect(display, (200, 200, 200), (x, y, cell_width, cell_height))
-
             # Unvisited cell
             if cells[row][col][-1] == False:
                 pygame.draw.rect(display, (140, 200, 255), (x, y, cell_width, cell_height))
@@ -93,6 +91,10 @@ while not process_interrupted:
                 if x > 0 and x < WIDTH:
                     if cells[row][col-1][1] != "2" and cells[row][col][3] != "4":
                         pygame.draw.line(display, (0, 0, 0), (x, y), (x, y+cell_height), 2)
+
+	        # Cursor
+            if not maze_created and col == current_cell[0] and row == current_cell[1]:
+                pygame.draw.rect(display, (150, 150, 150), (x, y, cell_width, cell_height))
             
             x += cell_width
         x = 0
@@ -102,9 +104,39 @@ while not process_interrupted:
         if event.type == pygame.QUIT:
             process_interrupted = True
             break
+        
+        if event.type == pygame.KEYDOWN:
+            # Change generation speed / TPS (ticks per second)
+            if event.key == pygame.K_UP:
+                speed_limit += 10
+            if event.key == pygame.K_DOWN:
+                speed_limit -= 10
+            speed_limit = speed_limit%110
+
+            # Pause / Play
+            if event.key == pygame.K_SPACE:
+                process_paused = not process_paused
+
+                if not maze_created:
+                    if process_paused:
+                        pause_starting_time = time.time()
+                    elif not process_paused:
+                        pause_duration += time.time() - pause_starting_time
+            
+            if event.key == pygame.K_RETURN:
+                # Replay / Reset
+                starting_time = ending_time = time.time()
+                pause_starting_time = pause_duration = 0
+
+                cells         = [[["0", "0", "0", "0", "0", False] for _ in range(maze_size_w)] for _ in range(maze_size_h)]
+                current_cell  = (0, 0)
+                visited_cells = []
+
+                amount_of_visited_cells = 0
+                process_paused = maze_created = False
 
     pygame.display.update()
-    # clock.tick(20)    # Speed limiter
+    clock.tick(speed_limit)
 
 pygame.quit()
     
