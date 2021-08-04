@@ -10,6 +10,7 @@ Maze generator made with `Pygame` library in `Python 3`!
 - Use `Up` and `Down` arrow buttons to change the generation speed (min 10t/s, max 100t/s or unltd.t/s)
 - Press `Spacebar` to pause/resume the generation
 - Press `Enter` to reset and restart the generation
+- All mazes will be generated randomly!
 
 ---
 
