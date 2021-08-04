@@ -22,7 +22,7 @@ Maze generator made with `Pygame` library in `Python 3`!
 
 - Nothing is required for the Maze Generator application to work, but for development purposes you will need:
   * `Python 3` You can download Python from [here](https://www.python.org/downloads/)
-  * `Pygame` You can find download instructions for the module from [here](https://github.com/pygame/pygame)'
+  * `Pygame` You can find download instructions for the module from [here](https://github.com/pygame/pygame)
 
 ---
 
