@@ -4,22 +4,22 @@ from random import choice
 # DO NOT MODIFY CODE ABOVE THIS LINE -----------------------------------------------------------------------------------
 
 WIDTH, HEIGHT            = 600, 600     # Window size
-maze_size_w, maze_size_h = 20, 20       # Maze size
+maze_size_w, maze_size_h = 30, 30       # Maze size
 
 # DO NOT MODIFY CODE BELOW THIS LINE -----------------------------------------------------------------------------------
 
 process_paused           = False
 maze_created             = False
+maze_solved              = False
+
 amount_of_visited_cells  = 0    # Used to calculate the percentage of the maze that has been generated
 finish_flag              = -1
 cells                    = [[["0", "0", "0", "0", "0", False] for _ in range(maze_size_w)] for _ in range(maze_size_h)]
 current_cell             = (0, 0)  # This is where the maze generator will start generating
 visited_cells            = []
-open_nodes               = {(0, 0): (0, 0)}
+open_nodes               = {(0, 0): (0, 0)} # Contains all unvisited nodes and where they originate from
 closed_nodes             = []
 current_node             = -1
-maze_solved              = False
-path_drawn               = False
 path                     = []
 path_map                 = {}
 current_step             = (maze_size_w - 1, maze_size_h - 1)
@@ -108,7 +108,7 @@ def solve_maze():
     # f = g + h
     # If there are multiple same f values, choose the one with the lowest h value.
 
-    global open_nodes, closed_nodes, current_node, maze_solved, path_drawn, path_map, path
+    global open_nodes, closed_nodes, current_node, maze_solved, path_map, path
 
     if maze_created is False or maze_solved is True or process_paused is True:
         return
@@ -171,12 +171,13 @@ def solve_maze():
 
 
 def generate_and_solve_maze():
-    global current_step, path_drawn, path
+    global current_step, path
 
     # These functions will not run if they are already finished.
     generate_maze()
     solve_maze()
 
+    # While solving the maze, also draw the current progress
     if maze_created is True and process_paused is False:
         # Remove the gap between the end of the path and the current node
         path = [current_node]
@@ -285,7 +286,7 @@ def draw_maze_and_path(display: pygame.Surface):
 
 def reset_maze():
     global cells, current_cell, visited_cells, amount_of_visited_cells, process_paused, maze_created, maze_solved,\
-        path_drawn, current_node, open_nodes, closed_nodes, path, path_map, current_step
+        current_node, open_nodes, closed_nodes, path, path_map, current_step
 
     cells = [
         [["0", "0", "0", "0", "0", False] for _ in range(maze_size_w)] for _ in range(maze_size_h)
